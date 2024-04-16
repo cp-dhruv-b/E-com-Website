@@ -1,79 +1,100 @@
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    <ProductCard
+  <h2 class="text-2xl font-semibold m-4">Featured Products</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 m-3">
+    <router-link
       v-for="product in products"
       :key="product.id"
-      :product="product"
-      :isFavorite="isFavorite(product.id)"
-      @toggle-favorite="toggleFavorite"
-    />
+      :to="{ name: 'ProductDetails', params: { id: product.id } }"
+    >
+      <ProductCard
+        :product="product"
+        :isFavorite="isFavorite(product.id)"
+        @toggle-favorite="toggleFavorite"
+      />
+    </router-link>
   </div>
 </template>
 
 <script>
-import ProductCard from './ProductCard.vue';
-import { ApiRequest } from '../api/api.js';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import ProductCard from "./ProductCard.vue";
+import { ApiRequest } from "../api/api.js";
 
 export default {
   components: {
-    ProductCard
+    ProductCard,
   },
-  data() {
-    return {
-      products: [],
-      favorites: []
-    }
-  },
-  created() {
-    this.fetchProducts();
-    this.fetchFavorites();
-  },
-  methods: {
-    async fetchProducts() {
+  setup() {
+    const router = useRouter();
+    const products = ref([]);
+    const favorites = ref([]);
+
+    const fetchProducts = async () => {
       try {
-        const products = await ApiRequest('get', 'product');
-        this.products = products;
+        const productsData = await ApiRequest("get", "product");
+        products.value = productsData;
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error("Error fetching products:", error);
       }
-    },
-    async fetchFavorites() {
+    };
+
+    const fetchFavorites = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) return;
 
-        const favorites = await ApiRequest('get', 'favorites', null, token);
-        this.favorites = favorites;
+        const favoritesData = await ApiRequest("get", "favorites", null, token);
+        favorites.value = favoritesData;
       } catch (error) {
-        console.error('Error fetching favorites:', error);
+        console.error("Error fetching favorites:", error);
       }
-    },
-    isFavorite(productId) {
-      return this.favorites.some(favorite => favorite.productId === productId);
-    },
-    async toggleFavorite(productId) {
+    };
+
+    const isFavorite = (productId) => {
+      return favorites.value.some((favorite) => favorite.productId === productId);
+    };
+
+    const toggleFavorite = async (productId) => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) return;
 
-        const isFavorite = this.isFavorite(productId);
-        const method = isFavorite ? 'delete' : 'post';
+        const isFavoriteValue = isFavorite(productId);
+        const method = isFavoriteValue ? "delete" : "post";
         const endpoint = `product/${productId}/favorite`;
 
         await ApiRequest(method, endpoint, null, token);
-        isFavorite ? this.removeFromFavorites(productId) : this.addToFavorites(productId);
+        isFavoriteValue ? removeFromFavorites(productId) : addToFavorites(productId);
       } catch (error) {
-        console.error('Error toggling favorite:', error);
+        console.error("Error toggling favorite:", error);
       }
-    },
-    addToFavorites(productId) {
-      this.favorites.push({ productId });
-    },
-    removeFromFavorites(productId) {
-      this.favorites = this.favorites.filter(favorite => favorite.productId !== productId);
-    }
-  }
-}
+    };
+
+    const addToFavorites = (productId) => {
+      favorites.value.push({ productId });
+    };
+
+    const removeFromFavorites = (productId) => {
+      favorites.value = favorites.value.filter(
+        (favorite) => favorite.productId !== productId
+      );
+    };
+
+    return {
+      products,
+      favorites,
+      fetchProducts,
+      fetchFavorites,
+      isFavorite,
+      toggleFavorite,
+    };
+  },
+  mounted() {
+    this.fetchProducts();
+    this.fetchFavorites();
+  },
+};
 </script>
 
 <style scoped>

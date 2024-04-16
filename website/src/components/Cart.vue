@@ -1,72 +1,50 @@
 <template>
-    <div class="cart">
-      <h2 class="cart-heading">Your Cart</h2>
-      <div v-if="cartItems.length === 0" class="empty-cart">
-        <p>Your cart is empty.</p>
+  <div class="cart bg-white shadow-md rounded px-8 py-6">
+    <h2 class="text-lg font-semibold mb-4">Your Cart</h2>
+    <div v-if="cartItems.length === 0" class="empty-cart">
+      <p>Your cart is empty.</p>
+    </div>
+    <div v-else>
+      <div
+        v-for="(item, index) in cartItems"
+        :key="index"
+        class="cart-item flex items-center justify-between border-b pb-2 mb-2"
+      >
+        <div class="item-details">
+          <p class="font-semibold">{{ item.name }}</p>
+          <p class="text-gray-600">Price: ${{ item.price.toFixed(2) }}</p>
+          <!-- Add more details like quantity, total price, etc. -->
+        </div>
+        <button
+          @click="removeFromCart(index)"
+          class="remove-btn bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded"
+        >
+          Remove
+        </button>
       </div>
-      <div v-else>
-        <div v-for="(item, index) in cartItems" :key="index" class="cart-item">
-          <div class="item-details">
-            <p>{{ item.name }}</p>
-            <p>{{ item.price }}</p>
-            <!-- Add more details like quantity, total price, etc. -->
-          </div>
-          <button @click="removeFromCart(index)" class="remove-btn">Remove</button>
-        </div>
-        <div class="cart-total">
-          <p>Total: {{ calculateTotal() }}</p>
-          <!-- Add checkout button or continue shopping link -->
-        </div>
+      <div class="cart-total mt-4">
+        <p class="font-semibold">Total: ${{ calculateTotal().toFixed(2) }}</p>
       </div>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        cartItems: [], // Array to store cart items
-      };
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      cartItems: [],
+    };
+  },
+  methods: {
+    removeFromCart(index) {
+      this.cartItems.splice(index, 1);
     },
-    methods: {
-      removeFromCart(index) {
-        this.cartItems.splice(index, 1); // Remove item from cart
-      },
-      calculateTotal() {
-        // Calculate total price of items in cart
-        return this.cartItems.reduce((total, item) => total + item.price, 0);
-      },
+    calculateTotal() {
+      return this.cartItems.reduce((total, item) => total + item.price, 0);
     },
-  };
-  </script>
-  
-  <style scoped>
-  .cart {
-    /* Add cart styles here */
-  }
-  
-  .cart-heading {
-    /* Add heading styles here */
-  }
-  
-  .empty-cart {
-    /* Add empty cart styles here */
-  }
-  
-  .cart-item {
-    /* Add cart item styles here */
-  }
-  
-  .item-details {
-    /* Add item details styles here */
-  }
-  
-  .remove-btn {
-    /* Add remove button styles here */
-  }
-  
-  .cart-total {
-    /* Add cart total styles here */
-  }
-  </style>
-  
+  },
+};
+</script>
+
+<style scoped></style>
